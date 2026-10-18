@@ -20,6 +20,7 @@ public class BookProfile : Profile
             .ForMember(d => d.Id, o => o.Ignore())
             .ForMember(d => d.PurchasePrice, o => o.Ignore())
             .ForMember(d => d.InternalNotes, o => o.Ignore())
-            .ForMember(d => d.StorageLocation, o => o.Ignore());
+            .ForMember(d => d.StorageLocation, o => o.Ignore())
+            .ForMember(d => d.CreatedAt, o => o.Ignore());
     }
 }

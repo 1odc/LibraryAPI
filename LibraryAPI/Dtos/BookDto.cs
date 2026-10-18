@@ -10,5 +10,6 @@ namespace LibraryAPI.Dtos
         public BookGenre Genre { get; set; }
         public int PublishedYear { get; set; }
         public int AuthorAgeAtPublication { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

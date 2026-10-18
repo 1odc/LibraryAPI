@@ -18,12 +18,53 @@ namespace LibraryAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<List<BookDto>> GetAllAsync()
+        public async Task<PagedResult<BookDto>> GetAllAsync(BookQueryParams p)
         {
-            return await _context.Books
-                .AsNoTracking()
+            IQueryable<Book> query = _context.Books.AsNoTracking();
+
+            if (p.Genre.HasValue)
+                query = query.Where(b => b.Genre == p.Genre.Value);
+
+            if (!string.IsNullOrWhiteSpace(p.Author))
+                query = query.Where(b => b.Author.FirstName.Contains(p.Author)
+                                      || b.Author.LastName.Contains(p.Author));
+
+            if (!string.IsNullOrWhiteSpace(p.Search))
+                query = query.Where(b => b.Title.Contains(p.Search)
+                                      || b.Author.FirstName.Contains(p.Search)
+                                      || b.Author.LastName.Contains(p.Search));
+
+            if (p.MinYear.HasValue)
+                query = query.Where(b => b.PublishedYear >= p.MinYear.Value);
+
+            if (p.MaxYear.HasValue)
+                query = query.Where(b => b.PublishedYear <= p.MaxYear.Value);
+
+            var totalItems = await query.CountAsync();
+
+            var desc = string.Equals(p.SortOrder, "desc", StringComparison.OrdinalIgnoreCase);
+            query = p.SortBy?.ToLowerInvariant() switch
+            {
+                "title" => desc ? query.OrderByDescending(b => b.Title).ThenByDescending(b => b.Id)
+                                 : query.OrderBy(b => b.Title).ThenBy(b => b.Id),
+                "year" => desc ? query.OrderByDescending(b => b.PublishedYear).ThenByDescending(b => b.Id)
+                                 : query.OrderBy(b => b.PublishedYear).ThenBy(b => b.Id),
+                "author" => desc ? query.OrderByDescending(b => b.Author.LastName)
+                                        .ThenByDescending(b => b.Author.FirstName).ThenByDescending(b => b.Id)
+                                 : query.OrderBy(b => b.Author.LastName)
+                                        .ThenBy(b => b.Author.FirstName).ThenBy(b => b.Id),
+                "date" => desc ? query.OrderByDescending(b => b.CreatedAt).ThenByDescending(b => b.Id)
+                                 : query.OrderBy(b => b.CreatedAt).ThenBy(b => b.Id),
+                _ => query.OrderBy(b => b.Id)
+            };
+
+            var items = await query
+                .Skip((p.Page - 1) * p.Size)
+                .Take(p.Size)
                 .ProjectTo<BookDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
+
+            return new PagedResult<BookDto>(items, totalItems, p.Page, p.Size);
         }
 
         public async Task<BookDto?> GetByIdAsync(int id)
@@ -47,6 +88,7 @@ namespace LibraryAPI.Services
         public async Task<BookDto> CreateAsync(CreateBookRequest request)
         {
             var book = _mapper.Map<Book>(request);
+            book.CreatedAt = DateTime.UtcNow;
             book.StorageLocation = "Головний склад, Сектор А";
             book.PurchasePrice = 100.00m;
 

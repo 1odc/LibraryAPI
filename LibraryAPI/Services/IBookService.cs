@@ -5,7 +5,7 @@ namespace LibraryAPI.Services
 {
     public interface IBookService
     {
-        Task<List<BookDto>> GetAllAsync();
+        Task<PagedResult<BookDto>> GetAllAsync(BookQueryParams p);
         Task<BookDto?> GetByIdAsync(int id);
         Task<List<BookDto>> GetByGenreAsync(BookGenre genre);
         Task<BookDto> CreateAsync(CreateBookRequest request);

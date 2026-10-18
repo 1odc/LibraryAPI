@@ -14,6 +14,7 @@
         public Author Author { get; set; } = new Author();
         public BookGenre Genre { get; set; }
         public int PublishedYear { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Чутливі дані, які мають бути приховані від читачів
         public string StorageLocation { get; set; } = string.Empty;

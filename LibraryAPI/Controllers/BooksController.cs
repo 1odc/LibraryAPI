@@ -19,8 +19,10 @@ namespace LibraryAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<BookDto>>> GetAll()
-            => Ok(await _bookService.GetAllAsync());
+        public async Task<ActionResult<PagedResult<BookDto>>> GetAll([FromQuery] BookQueryParams queryParams)
+        {
+            return Ok(await _bookService.GetAllAsync(queryParams));
+        }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<BookDto>> GetById(int id)
