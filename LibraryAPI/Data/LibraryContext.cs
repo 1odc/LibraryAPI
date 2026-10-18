@@ -16,6 +16,7 @@ namespace LibraryAPI.Data
                 b.Property(x => x.Title).IsRequired().HasMaxLength(100);
                 b.Property(x => x.PurchasePrice).HasPrecision(18, 2);
                 b.Property(x => x.InternalNotes).HasMaxLength(500);
+                b.Property(x => x.StorageLocation).HasMaxLength(100);
 
                 b.OwnsOne(x => x.Author, a =>
                 {

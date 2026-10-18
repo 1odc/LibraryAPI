@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using AutoMapper;
-using LibraryAPI.Dtos;
+﻿using LibraryAPI.Dtos;
 using LibraryAPI.Models;
 using LibraryAPI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -13,48 +11,47 @@ namespace LibraryAPI.Controllers
     [Produces("application/json")]
     public class BooksController : ControllerBase
     {
-        private readonly BooksRepository _repo;
-        private readonly IMapper _mapper;
+        private readonly IBookService _bookService;
 
-        public BooksController(BooksRepository BooksRepository, IMapper Mapper)
+        public BooksController(IBookService bookService)
         {
-            _repo = BooksRepository;
-            _mapper = Mapper;
+            _bookService = bookService;
         }
 
         [HttpGet]
-        [HttpGet]
-        public ActionResult<List<BookDto>> GetAll([FromQuery] string? author)
-        {
-            var books = _repo.GetAll(author);
-            return Ok(_mapper.Map<List<BookDto>>(books));
-        }
+        public async Task<ActionResult<List<BookDto>>> GetAll()
+            => Ok(await _bookService.GetAllAsync());
+
         [HttpGet("{id:int}")]
-        public ActionResult<BookDto> GetById(int id)
+        public async Task<ActionResult<BookDto>> GetById(int id)
         {
-            var book = _repo.GetById(id);
-            if (book == null)
-            {
-                return NotFound();
-            }
-
-            var dto = _mapper.Map<BookDto>(book);
-            return Ok(dto);
+            var book = await _bookService.GetByIdAsync(id);
+            return book is null ? NotFound() : Ok(book);
         }
-        [HttpPost("create")]
-        public ActionResult<BookDto> Create(CreateBookRequest cbr)
+
+        [HttpGet("by-genre")]
+        public async Task<ActionResult<List<BookDto>>> GetByGenre([FromQuery] BookGenre genre)
         {
-            var book = _mapper.Map<Book>(cbr);
-            _repo.AddBook(book);
-            var dto = _mapper.Map<BookDto>(book);
+            return Ok(await _bookService.GetByGenreAsync(genre));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<BookDto>> Create(CreateBookRequest request)
+        {
+            var dto = await _bookService.CreateAsync(request);
             return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
         }
-        [HttpDelete("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Delete(int id)
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, CreateBookRequest request)
         {
-            return _repo.Remove(id) ? NoContent() : NotFound();
+            return await _bookService.UpdateAsync(id, request) ? NoContent() : NotFound();
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            return await _bookService.DeleteAsync(id) ? NoContent() : NotFound();
         }
     }
 }

@@ -16,6 +16,7 @@
         public int PublishedYear { get; set; }
 
         // Чутливі дані, які мають бути приховані від читачів
+        public string StorageLocation { get; set; } = string.Empty;
         public decimal PurchasePrice { get; set; }
         public string InternalNotes { get; set; } = string.Empty;
     }

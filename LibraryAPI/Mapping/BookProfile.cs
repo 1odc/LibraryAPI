@@ -19,6 +19,7 @@ public class BookProfile : Profile
         CreateMap<CreateBookRequest, Book>()
             .ForMember(d => d.Id, o => o.Ignore())
             .ForMember(d => d.PurchasePrice, o => o.Ignore())
-            .ForMember(d => d.InternalNotes, o => o.Ignore());
+            .ForMember(d => d.InternalNotes, o => o.Ignore())
+            .ForMember(d => d.StorageLocation, o => o.Ignore());
     }
 }

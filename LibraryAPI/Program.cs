@@ -12,7 +12,8 @@ builder.Services.AddOpenApi("v1", options =>
     options.ShouldInclude = apiDescription => apiDescription.GroupName is null or "v1";
 });
 builder.Services.AddControllers();
-builder.Services.AddSingleton<BooksRepository>();
+builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IStatsService, StatsService>();
 builder.Services.AddAutoMapper(cfg => { }, typeof(Program));
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
